@@ -2,603 +2,939 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Foosball Admin Panel UI - Themed</title>
+<title>Foosball Continuous Matcher With Player Stats</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/png" href="https://i.postimg.cc/ryn27ksN/cropped-circle-image.png" sizes="32x32" />
+<link rel="icon" type="image/png" href="https://i.postimg.cc/ryn27ksN/cropped-circle-image.png" sizes="96x96" />
+<link rel="apple-touch-icon" sizes="180x180" href="https://i.postimg.cc/ryn27ksN/cropped-circle-image.png" />
+<meta name="apple-mobile-web-app-title" content="OT Foosball" />
+<link rel="manifest" href="/site.webmanifest" />
 <style>
-/* --- THEME COLOR VARIABLES (Light Mode) --- */
-:root {
-    --background: #f5f5f7; 
-    --foreground: #1c1c1c; 
-    --card: #ffffff; 
-    --primary: #9a00ff; 
-    --primary-foreground: #ffffff; 
-    --destructive: #ff4d4f; 
-    --destructive-foreground: #ffffff;
-    --muted: #ececf0; 
-    --muted-foreground: #717182; 
-    --border: rgba(0, 0, 0, 0.1); 
-    --input-background: #f3f3f5; 
-    --radius: 0.625rem; 
+body { font-family: Arial; padding: 15px; margin: 0; background: #f5f5f5; }
+h2, h3 { margin: 10px 0; }
+.player-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+label { background: #eee; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+input[type=checkbox] { margin-right: 5px; }
+button { margin-top: 10px; padding: 10px 12px; background: #9a00ff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+button:hover { background: #7c00cc; }
+select { padding: 8px; font-size: 14px; margin-right: 10px; margin-bottom: 10px; }
+.team-box { margin-top: 15px; padding: 12px; background: #fff; border-radius: 6px; }
+.team-box h3 { margin: 8px 0; }
+table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+th, td { border: 1px solid #ccc; padding: 8px; text-align: center; word-wrap: break-word; }
+th { background: #9a00ff; color: white; }
+.collapsible-btn { display: none; width: 100%; text-align: left; background: #232323; color: #ffffff; border: none; border-radius: 6px; padding: 8px 12px; font-size: 14px; margin-bottom: 8px; cursor: pointer; }
+
+/* Added style for penalized rows */
+.penalized-row { background-color: #ffdddd; }
+
+/* === Style to hide buttons when outside playing hours === */
+.hidden-btn {
+    display: none !important;
 }
 
-/* --- BASE STYLES --- */
-body { 
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; 
-    padding: 20px; 
-    margin: 0; 
-    background: var(--background); 
-    color: var(--foreground); 
-}
-h2 { color: var(--foreground); font-size: 24px; margin-bottom: 20px; display: flex; align-items: center; }
-h3 { font-size: 16px; font-weight: 600; color: var(--foreground); margin-top: 0; margin-bottom: 10px; }
-label { font-size: 14px; font-weight: 500; color: var(--foreground); display: block; margin-top: 10px; margin-bottom: 5px; }
-
-/* --- GRID LAYOUT --- */
-#adminPanel { display: none; max-width: 1200px; margin: auto; }
-.main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-
-/* --- CARD STYLES --- */
-.card { 
-    background: var(--card); 
-    border-radius: var(--radius); 
-    padding: 20px; 
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); 
-}
-.card.data-management { 
-    background: #fef4f4; 
-    border: 1px solid #f09393; 
-}
-
-/* --- INPUTS & BUTTONS --- */
-input[type=number] { 
-    padding: 10px; 
-    margin-bottom: 10px; 
-    width: 100%; 
-    box-sizing: border-box; 
-    border-radius: calc(var(--radius) / 2); 
-    border: 1px solid var(--border); 
-    font-size: 14px; 
-    background: var(--input-background);
-    color: var(--foreground);
-}
-
-/* --- SELECT CUSTOM STYLES (MATCHES INPUTS) --- */
-.select-wrapper {
-    position: relative;
-    margin-bottom: 10px;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.select-wrapper select { 
-    padding: 10px; 
-    width: 100%; 
-    box-sizing: border-box; 
-    border-radius: calc(var(--radius) / 2); 
-    border: 1px solid var(--border); 
-    font-size: 14px; 
-    background: var(--input-background);
-    color: var(--foreground);
-    
-    /* Remove default OS appearance */
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    cursor: pointer;
-    padding-right: 30px; /* Make space for the custom arrow */
-}
-
-/* Custom Arrow Icon using CSS */
-.select-wrapper::after {
-    content: "▼";
-    position: absolute;
-    top: 50%;
-    right: 12px;
-    transform: translateY(-50%) scale(0.6); /* Scale the arrow down */
-    pointer-events: none; /* Allows click to pass through to the select element */
-    color: var(--muted-foreground);
-    font-size: 16px;
-    line-height: 1;
-}
-
-.btn { 
-    padding: 12px; 
-    border: none; 
-    border-radius: calc(var(--radius) / 2); 
-    cursor: pointer; 
-    font-size: 14px; 
-    font-weight: 600; 
-    width: 100%; 
+/* === Top Player Display Style === */
+#topPlayerDisplay {
+    color: #333;
     margin-top: 10px; 
-    transition: all 0.2s ease-in-out; 
+    font-size: 1.1em;
+    line-height: 15px;
 }
 
-/* --- PRIMARY BUTTON (Gradient) --- */
-.btn-primary { 
-    color: var(--primary-foreground); 
-    background: linear-gradient(to right, #a855f7, #ec4899); 
-}
-.btn-primary:hover { 
-    background: linear-gradient(to right, #9333ea, #db2777); 
-}
-
-.btn-danger { 
-    background: var(--destructive); 
-    color: var(--destructive-foreground); 
-    margin-top: 15px; 
-}
-.btn-danger:hover { 
-    background: #cc0000; 
-}
-.btn-outline-danger { 
-    background: transparent; 
-    color: var(--destructive); 
-    border: 1px solid var(--destructive); 
-    margin-top: 8px; 
-}
-.btn-outline-danger:hover { 
-    background: #ff4d4f10; 
+/* === TOAST STYLES === */
+#toast-container {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
 }
 
-/* --- STATS LIST --- */
-.stats-list { margin-top: 15px; }
-.player-stat-row { 
-    display: grid; 
-    grid-template-columns: 50px 1fr repeat(3, 60px); 
-    align-items: center; 
-    padding: 10px 0; 
-    border-bottom: 1px solid var(--border); 
-    font-size: 14px; 
-}
-.player-stat-row:last-child { border-bottom: none; }
-
-/* --- PLAYER INITIALS (Gradient Circle) --- */
-.player-initial { 
-    width: 32px; 
-    height: 32px; 
-    border-radius: 50%; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    color: white; 
-    font-weight: bold; 
-    font-size: 16px; 
-    margin-right: 10px; 
-    background: linear-gradient(to bottom right, #a855f7, #ec4899);
-}
-
-.player-name-container { 
-    display: flex; 
-    align-items: center; 
-    font-weight: 600; 
-    color: var(--foreground);
-    grid-column: 2; 
-}
-.stat-label { font-size: 10px; color: var(--muted-foreground); text-transform: uppercase; margin-top: 3px; }
-.stat-value { font-weight: bold; color: var(--foreground); }
-.stat-header { 
-    display: grid; 
-    grid-template-columns: 50px 1fr repeat(3, 60px); 
-    padding: 5px 0; 
-    font-weight: 600; 
-    color: var(--muted-foreground); 
-    border-bottom: 2px solid var(--border); 
-    margin-bottom: 5px; 
-    font-size: 12px;
-}
-.stat-header div:nth-child(3), .stat-header div:nth-child(4), .stat-header div:nth-child(5) {
+.toast-message {
+    min-width: 250px;
+    background-color: #333;
+    color: white;
     text-align: center;
+    border-radius: 2px;
+    padding: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.5s, visibility 0.5s;
 }
 
-/* --- TOP PERFORMER BADGE --- */
-.top-performer { 
-    background: var(--muted); 
-    color: var(--primary); 
-    padding: 2px 6px; 
-    border-radius: 4px; 
-    font-size: 10px; 
-    font-weight: 700; 
-    margin-left: 10px; 
+.toast-message.show {
+    visibility: visible;
+    opacity: 1;
 }
 
-/* --- WARNING BOX --- */
-.warning-box {
-    margin-top: 20px; 
-    padding: 10px; 
-    background: var(--muted); 
-    border-radius: calc(var(--radius) / 2); 
-    font-size: 13px; 
-    color: var(--muted-foreground);
-    border: 1px solid var(--border);
+.toast-error {
+    background-color: #d9534f; /* Red for errors */
 }
 
-/* --- AUTH CONTAINER --- */
-.auth-container { max-width: 350px; margin: 100px auto; padding: 30px; background: var(--card); border-radius: var(--radius); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
-.auth-container input { margin-bottom: 15px; }
+/* === PRELOADER STYLES === */
+#preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #333;
+    font-size: 1.2em;
+    transition: opacity 0.5s;
+}
 
-/* --- TOAST STYLES --- */
-#toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; }
-.toast-message { min-width: 250px; background-color: #333; color: white; text-align: center; border-radius: 4px; padding: 12px 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); opacity: 0; transition: opacity 0.5s; }
-.toast-message.show { opacity: 1; }
-.toast-error { background-color: #d9534f; }
+#preloader.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* === CUSTOM DROPDOWN UI STYLES === */
+.custom-dropdown {
+    position: relative;
+    display: inline-block;
+    width: 200px; /* Adjust width as needed */
+    margin-bottom: 15px;
+}
+
+.dropdown-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.dropdown-toggle.active {
+    border-color: #9a00ff; /* Highlight when open/active */
+}
+
+.dropdown-toggle .arrow {
+    transition: transform 0.3s;
+    font-size: 1.2em;
+}
+.dropdown-toggle.active .arrow {
+    transform: rotate(180deg);
+}
+
+#dropdown-options {
+    position: absolute;
+    top: 100%; 
+    left: 0;
+    z-index: 10;
+    width: 100%;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 250px;
+    overflow-y: auto;
+    display: none; /* Controlled by JS */
+}
+
+.dropdown-option {
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 15px;
+    color: #333;
+}
+
+.dropdown-option:hover {
+    background-color: #f0f0f0;
+}
+
+.dropdown-option.selected {
+    background-color: #e0e0e0;
+    font-weight: bold;
+}
+
+/* Ensure the Add New Week button doesn't hug the dropdown too closely */
+#addNewWeekBtn {
+    margin-left: 10px;
+    vertical-align: top;
+    height: 44px; /* Match dropdown toggle height */
+    margin-top: 0;
+}
 
 @media (max-width: 768px) {
-    .main-grid { grid-template-columns: 1fr; }
+  .player-list { display: none; flex-direction: column; }
+  .collapsible-btn { display: block; }
+  button, select { width: 100%; margin-top: 8px; }
+  table { font-size: 12px; }
+  .team-box { padding: 10px; font-size: 14px; }
+  
+  .custom-dropdown {
+      width: 60%; 
+      display: block;
+  }
+  #addNewWeekBtn {
+      width: calc(40% - 10px);
+      margin-left: 10px;
+      display: inline-block;
+  }
 }
-#adminPassword{
- padding: 10px; 
-            margin-bottom: 15px; 
-            width: 100%; 
-            box-sizing: border-box; 
-            border-radius: 0.3125rem; /* ~calc(var(--radius) / 2) */
-            border: 1px solid rgba(0, 0, 0, 0.1); /* var(--border) */
-            font-size: 14px; 
-            background: #f3f3f5; /* var(--input-background) */
-            color: #1c1c1c; /* var(--foreground) */
-            height: 40px; /* Ensures a consistent height similar to the select/number inputs */
+@media (max-width: 480px) {
+  body { padding: 10px; }
+  label { font-size: 13px; padding: 6px 10px; }
+  button { padding: 8px 10px; font-size: 13px; }
+  table { font-size: 11px; }
+  .team-box { padding: 8px; font-size: 13px; }
+  
+  .custom-dropdown {
+      width: 100%;
+      margin-bottom: 8px;
+  }
+  #addNewWeekBtn {
+      width: 100%;
+      margin-left: 0;
+      height: auto;
+  }
 }
 </style>
+
 <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-analytics-compat.js"></script>
+
 </head>
 <body>
 
+<div id="preloader">
+    <img src="https://i.postimg.cc/fTP57CCZ/Ball-1x-1-5s-200px-200px.gif" alt="Loading Foosball Data">
+    <p>Loading Foosball Stats...</p>
+</div>
 <div id="toast-container"></div>
 
-<div class="auth-container" id="authContainer">
-    <h2>Admin Login</h2>
-    <input 
-        type="password" 
-        id="adminPassword" 
-        placeholder="Enter Admin Password"
-    >
-    <button class="btn btn-primary" onclick="authenticateAdmin()">Login</button>
-    <p style="font-size: 12px; text-align: center; color: var(--muted-foreground);">**Warning: Password is client-side only.**</p>
-</div>
+<h2>Foosball Team Matcher</h2>
 
-<div class="admin-container" id="adminPanel">
-    <h2>Foosball Admin Control Panel</h2>
-
-    <div class="main-grid">
-        <div class="left-column">
-            <div class="card" style="margin-bottom: 20px;">
-                <h3>Select Week to Edit</h3>
-                <p style="color: var(--muted-foreground); font-size: 14px; margin-top: -5px; margin-bottom: 15px;">Choose the week you want to manage.</p>
-                
-                <div class="select-wrapper">
-                    <select id="weekSelector" onchange="loadWeeksFromFirebase(false)"></select>
-                </div>
-            </div>
-
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <h3>Current Calculated Stats</h3>
-                    <div id="matchesCountDisplay" style="color: var(--primary); font-weight: bold; font-size: 14px;"></div>
-                </div>
-                
-                <div class="stats-list">
-                    <div class="stat-header">
-                        <div></div>
-                        <div>Player</div>
-                        <div>Wins</div>
-                        <div>Losses</div>
-                        <div>Games</div>
-                    </div>
-                    <div id="playerStatsList">
-                        </div>
-                </div>
-
-                <div class="warning-box">
-                    Note: Admin updates override calculated values in the DB, but the player app must be updated to read the overrides upon page load.
-                </div>
-            </div>
-        </div>
-
-        <div class="right-column">
-            <div class="card" style="margin-bottom: 20px;">
-                <h3>Manual Stat Adjustment</h3>
-                <p style="color: var(--muted-foreground); font-size: 14px; margin-top: -5px; margin-bottom: 15px;">Adjust wins/losses for the selected player.</p>
-
-                <label for="playerSelector">Select Player</label>
-                
-                <div class="select-wrapper">
-                    <select id="playerSelector"></select>
-                </div>
-
-                <label for="newWins">New Win Count (e.g., 5.0)</label>
-                <input type="number" id="newWins" placeholder="Enter new win count" step="0.5">
-                
-                <label for="newLosses">New Loss Count (e.g., 3)</label>
-                <input type="number" id="newLosses" placeholder="Enter new loss count">
-                
-                <p style="color: var(--muted-foreground); font-size: 12px; margin-top: 15px;">Note: This bypasses match history and applies to the selected week only.</p>
-                <button class="btn btn-primary" onclick="updatePlayerStats()">Update Player Stats</button>
-            </div>
-            
-            <div class="card data-management">
-                <h3>⚠️ Data Management</h3>
-                <p style="color: var(--destructive); font-size: 14px; margin-top: -5px; margin-bottom: 15px;">Dangerous operations - use with caution</p>
-
-                <button class="btn btn-outline-danger" onclick="deleteLastMatchConfirmation()">Delete Last Match (Current Week)</button>
-                <button class="btn btn-danger" onclick="resetAllHistoryConfirmation()">Reset ALL History (DANGER!)</button>
-            </div>
-        </div>
+<h3>Select Week:</h3>
+<div class="custom-dropdown" id="weekDropdown">
+    <div class="dropdown-toggle" onclick="toggleDropdown()">
+        <span id="currentWeekDisplay">Week 1</span>
+        <span class="arrow">▼</span>
     </div>
+    <ul id="dropdown-options">
+        </ul>
 </div>
+<button onclick="addNewWeek()" id="addNewWeekBtn">Add New Week</button>
+<h3>
+  Select Present Players
+  <button class="collapsible-btn" onclick="togglePlayers()">Show / Hide Players</button>
+</h3>
+<div class="player-list" id="playerList"></div>
+
+<button onclick="createInitialMatch()" id="generateMatchBtn">Generate First Match</button>
+<button onclick="resetCurrentMatch()" id="resetMatchBtn">Reset Current Match</button>
+
+<div id="matchResult"></div>
+
+<button onclick="endTodaySession()" id="endSessionBtn">End Today's Session (Saves Stats)</button>
+<button style="display: none;" onclick="resetAllHistoryConfirmation()">Reset ALL History (Deletes Data)</button>
+
+<h3>Player Stats of the Week</h3>
+<table id="playerStatsTable">
+<thead>
+<tr><th>Player</th><th>Wins</th><th>Losses</th><th>Games</th></tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<h3 style="margin-top: 25px; display: none;">Current Week Leaderboard</h3>
+<div style="display: none;" id="topPlayerDisplay">No scores recorded yet.</div>
 
 <script>
-// ===========================================
-//             CONFIGURATION SECTION
-// ===========================================
-
-// ⚠️ 1. CHANGE THIS TO YOUR ADMIN PASSWORD
-const ADMIN_PASS = "admin123"; 
-
-// ⚠️ 2. REPLACE THE PLACEHOLDERS WITH YOUR FIREBASE CONFIG
-const firebaseConfig = {
-    apiKey: "AIzaSyB19QiECHId3sQjB7of1p1OFoN2FGgHEtA", // Replace with your apiKey
-    databaseURL: "https://foosball-bae9c-default-rtdb.firebaseio.com", // Replace with your databaseURL
-    // ... add any other necessary config fields (authDomain, projectId, etc.)
-};
-
-const app = firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-// Player list must match your data exactly
-const allPlayers = [
-    "Joseph", "Allan", "Isaac", "Timothy", "Daniel",
-    "Ethan", "Mabonga", "IVAN", "Robert", "Shadrach", "Joel"
+// ==== GLOBAL VARIABLES ====
+let allPlayers = [
+  "Joseph", "Allan", "Isaac", "Timothy", "Daniel",
+  "Ethan", "Mabonga", "IVAN", "Robert", "Shadrach", "Joel"
 ];
 
-let weeks = []; 
-let currentSelectedWeek = null; 
+const PRO_PLAYERS = ["Joseph", "Allan", "Timothy", "Daniel", "Ethan", "Mabonga", "Robert"];
+const NEWBIE_PLAYERS = ["Isaac", "IVAN", "Shadrach", "Joel"];
 
-// ===========================================
-//             UTILITY FUNCTIONS
-// ===========================================
 
+let currentTeam1 = [], currentTeam2 = [], availablePlayers = [], basePlayers = [];
+let weeks = [], currentWeekIndex = 0;
+
+// ==== UTILITIES ====
+function shuffle(arr){ return arr.sort(()=>Math.random()-0.5); }
+function togglePlayers(){
+  const list = document.querySelector('.player-list');
+  list.style.display = (list.style.display==='flex') ? 'none' : 'flex';
+}
+function getSelectedPlayers(){
+  let selected = [];
+  allPlayers.forEach((name,i)=>{
+    if(document.getElementById("p"+i).checked) selected.push(name);
+  });
+  return selected;
+}
+
+// ==== PRELOADER FUNCTION ====
+function hidePreloader() {
+    const preloader = document.getElementById('preloader');
+    if (preloader) {
+        preloader.classList.add('hidden');
+        setTimeout(() => {
+            preloader.style.display = 'none';
+        }, 500); 
+    }
+}
+
+
+// ==== TOAST FUNCTIONALITY ====
 function showToast(message, isError = false) {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
     toast.className = 'toast-message';
-    if (isError) toast.classList.add('toast-error');
+    if (isError) {
+        toast.classList.add('toast-error');
+    }
     toast.textContent = message;
+    
     container.appendChild(toast);
-    setTimeout(() => { toast.classList.add('show'); }, 10);
+    
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 10); 
+
     setTimeout(() => {
         toast.classList.remove('show');
         toast.addEventListener('transitionend', () => toast.remove());
     }, 3000);
 }
 
-// ===========================================
-//             AUTHENTICATION & SETUP
-// ===========================================
 
-function authenticateAdmin() {
-    const password = document.getElementById('adminPassword').value;
-    if (password === ADMIN_PASS) {
-        document.getElementById('authContainer').style.display = 'none';
-        document.getElementById('adminPanel').style.display = 'grid';
-        loadWeeksFromFirebase(true); 
+// ==== INIT PLAYERS LIST ====
+const container = document.getElementById('playerList');
+allPlayers.forEach((name, i)=>{
+  const id = "p"+i;
+  container.innerHTML += `
+    <label>
+      <input type="checkbox" id="${id}" value="${name}" checked>
+      ${name}
+    </label>`;
+});
+
+// ==== FIREBASE INIT ====
+const firebaseConfig = {
+    apiKey: "AIzaSyB19QiECHId3sQjB7of1p1OFoN2FGgHEtA",
+    authDomain: "foosball-bae9c.firebaseapp.com",
+    databaseURL: "https://foosball-bae9c-default-rtdb.firebaseio.com",
+    projectId: "foosball-bae9c",
+    storageBucket: "foosball-bae9c.appspot.com",
+    messagingSenderId: "267658490202",
+    appId: "1:267658490202:web:0d6cb79bf1507d47090363",
+    measurementId: "G-73SVYKGB4Y"
+};
+const app = firebase.initializeApp(firebaseConfig);
+const analytics = firebase.analytics();
+const db = firebase.database();
+
+// ==== TIME RESTRICTION LOGIC ====
+function isPlayTime() {
+    const now = new Date();
+    const day = now.getDay();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    
+    const currentTimeMinutes = hours * 60 + minutes;
+
+    if (day >= 1 && day <= 5) {
+        const session1Start = 13 * 60; 
+        const session1End = 14 * 60 + 30; 
+
+        const session2Start = 16 * 60 + 50; 
+        const session2End = 20 * 60; 
+
+        if (
+            (currentTimeMinutes >= session1Start && currentTimeMinutes < session1End) ||
+            (currentTimeMinutes >= session2Start && currentTimeMinutes < session2End)
+        ) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+function toggleButtons() {
+    const buttons = [
+        document.getElementById('addNewWeekBtn'),
+        document.getElementById('generateMatchBtn'),
+        document.getElementById('resetMatchBtn'),
+        document.getElementById('endSessionBtn')
+    ];
+    const playAllowed = isPlayTime();
+
+    buttons.forEach(btn => {
+        if (btn) {
+            btn.classList.toggle('hidden-btn', !playAllowed);
+        }
+    });
+}
+
+// ==== WEEK MANAGEMENT (UPDATED FOR CUSTOM DROPDOWN) ====
+
+// Close the dropdown if the user clicks outside of it
+document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('weekDropdown');
+    const toggle = dropdown.querySelector('.dropdown-toggle');
+    const options = document.getElementById('dropdown-options');
+
+    if (!dropdown.contains(event.target)) {
+        if (options.style.display === 'block') {
+            options.style.display = 'none';
+            toggle.classList.remove('active');
+        }
+    }
+});
+
+function toggleDropdown() {
+    const toggle = document.querySelector('.dropdown-toggle');
+    const options = document.getElementById('dropdown-options');
+    
+    if (options.style.display === 'block') {
+        options.style.display = 'none';
+        toggle.classList.remove('active');
     } else {
-        showToast("Authentication failed.", true);
+        renderDropdownOptions(); // Re-render in case a new week was added
+        options.style.display = 'block';
+        toggle.classList.add('active');
     }
 }
 
-// Function to load all weeks and their match history
-function loadWeeksFromFirebase(populateSelectorsOnLoad = false) {
-    const selectedWeekNum = document.getElementById('weekSelector') ? document.getElementById('weekSelector').value : null;
+function updateWeekDisplay() {
+  const currentWeekDisplay = document.getElementById("currentWeekDisplay");
+  if (weeks.length === 0) {
+      currentWeekDisplay.textContent = "No Weeks";
+      return;
+  }
+  
+  const currentWeekNumber = weeks[currentWeekIndex].weekNumber;
+  currentWeekDisplay.textContent = `Week ${currentWeekNumber}`;
+}
 
-    db.ref('weeks').once('value').then(snapshot => {
-        const data = snapshot.val();
-        weeks = [];
+function selectWeek(weekIndex) {
+    if (weekIndex >= 0 && weekIndex < weeks.length && weekIndex !== currentWeekIndex) {
+        currentWeekIndex = weekIndex;
+        updateWeekDisplay();
+        renderPlayerStats();
+        displayTopPlayer();
+        showToast(`Switched to Week ${weeks[currentWeekIndex].weekNumber}`);
+    }
+    // Close dropdown regardless
+    toggleDropdown();
+}
 
-        for(let key in data){
-            if (key.startsWith('week_')) {
-                const weekNum = parseInt(key.replace('week_',''));
-                const weekMatches = data[key] && data[key].matches ? Object.entries(data[key].matches).map(([key, val]) => ({id: key, ...val})) : [];
-                weeks.push({weekNumber: weekNum, matchHistory: weekMatches});
+function renderDropdownOptions() {
+    const optionsList = document.getElementById("dropdown-options");
+    optionsList.innerHTML = ""; // Clear existing options
+
+    if (weeks.length === 0) {
+        optionsList.innerHTML = '<li class="dropdown-option selected">No Weeks Available</li>';
+        return;
+    }
+
+    weeks.forEach((w, i) => {
+        const li = document.createElement("li");
+        li.classList.add("dropdown-option");
+        li.textContent = `Week ${w.weekNumber}`;
+        li.onclick = () => selectWeek(i);
+
+        if (i === currentWeekIndex) {
+            li.classList.add("selected");
+        }
+        optionsList.appendChild(li);
+    });
+    updateWeekDisplay(); // Ensure toggle displays current week
+}
+
+
+function addNewWeek(){
+  if (!isPlayTime()) { showToast("Adding a new week is restricted to allowed hours.", true); return; }
+  const newWeek = {weekNumber: weeks.length+1, matchHistory:[]};
+  weeks.push(newWeek);
+  
+  db.ref(`weeks/week_${newWeek.weekNumber}/matches`).set(null); 
+  currentWeekIndex = weeks.length-1;
+  
+  // Update both the display and the options list
+  updateWeekDisplay(); 
+  renderDropdownOptions();
+  renderPlayerStats();
+  displayTopPlayer(); 
+  showToast(`New Week ${newWeek.weekNumber} created!`);
+}
+
+
+// ==== MATCH LOGIC ====
+
+function isTeamValid(team) {
+    let newbieCount = team.filter(p => NEWBIE_PLAYERS.includes(p)).length;
+    return newbieCount < 2; 
+}
+
+function refillAvailablePlayers(){
+  availablePlayers = basePlayers.filter(p=>!currentTeam1.includes(p) && !currentTeam2.includes(p)); 
+  availablePlayers = shuffle(availablePlayers);
+}
+
+function pickNewTeam(opponentTeam = null){
+  if(availablePlayers.length<2) refillAvailablePlayers();
+
+  let newTeam = [];
+  let players = [...availablePlayers];
+  
+  let validPairFound = false;
+  for (let i = 0; i < players.length; i++) {
+      for (let j = i + 1; j < players.length; j++) {
+          const p1 = players[i];
+          const p2 = players[j];
+          
+          if (isTeamValid([p1, p2])) {
+              newTeam = [p1, p2];
+              availablePlayers = availablePlayers.filter(p => p !== p1 && p !== p2);
+              validPairFound = true;
+              return newTeam;
+          }
+      }
+  }
+
+  if (!validPairFound && availablePlayers.length >= 2) {
+      newTeam = [availablePlayers[0], availablePlayers[1]];
+      availablePlayers.splice(0,2);
+      showToast("Warning: Forced team creation (two Newbies likely paired) due to player constraint. Check selection.", true);
+      return newTeam;
+  }
+  
+  if(availablePlayers.length === 1) {
+      showToast("Only one player available for a two-person team. Match generation failed.", true);
+  } else if (availablePlayers.length === 0) {
+      refillAvailablePlayers();
+      if (availablePlayers.length >= 2) return pickNewTeam(opponentTeam); 
+  }
+  
+  return [];
+}
+
+
+function createInitialMatch(){
+  if (!isPlayTime()) { showToast("Match generation is restricted to allowed hours.", true); return; }
+
+  basePlayers = shuffle(getSelectedPlayers());
+  if(basePlayers.length<4){ 
+    showToast("Need at least 4 players selected to start a match.", true); 
+    return; 
+  }
+
+  let players = [...basePlayers];
+  currentTeam1 = [];
+  currentTeam2 = [];
+
+  let foundT1 = false;
+  for (let i = 0; i < players.length; i++) {
+      for (let j = i + 1; j < players.length; j++) {
+          const p1 = players[i];
+          const p2 = players[j];
+          if (isTeamValid([p1, p2])) {
+              currentTeam1 = [p1, p2];
+              players.splice(j, 1); 
+              players.splice(i, 1); 
+              foundT1 = true;
+              break;
+          }
+      }
+      if(foundT1) break;
+  }
+
+  let foundT2 = false;
+  if(players.length >= 2) {
+    for (let i = 0; i < players.length; i++) {
+        for (let j = i + 1; j < players.length; j++) {
+            const p3 = players[i];
+            const p4 = players[j];
+            if (isTeamValid([p3, p4])) {
+                currentTeam2 = [p3, p4];
+                players.splice(j, 1); 
+                players.splice(i, 1); 
+                foundT2 = true;
+                break;
             }
         }
-        
-        weeks.sort((a, b) => a.weekNumber - b.weekNumber);
+        if(foundT2) break;
+    }
+  }
+  
+  if(currentTeam1.length !== 2 || currentTeam2.length !== 2) {
+      showToast("Could not generate two valid teams (Newbie pairing constraint failed). Please select more diverse players.", true);
+      currentTeam1 = []; currentTeam2 = []; availablePlayers = []; basePlayers = [];
+      return;
+  }
 
-        if(weeks.length === 0) {
-            weeks.push({weekNumber: 1, matchHistory: []});
-        }
-        
-        if (populateSelectorsOnLoad) {
-            populateSelectors(selectedWeekNum);
-        }
-        
-        const finalSelectedWeekNum = selectedWeekNum || (weeks.length > 0 ? weeks[weeks.length - 1].weekNumber : 1);
-        currentSelectedWeek = weeks.find(w => w.weekNumber == finalSelectedWeekNum) || weeks[0];
-
-        updatePlayerStatsDisplay();
-    }).catch(error => {
-        console.error("Error loading data:", error);
-        showToast("Error loading data. Check Firebase config and security rules.", true);
-    });
+  availablePlayers = players; 
+  displayMatch();
+  showToast("First match generated. Let's play!");
+}
+function displayMatch(){
+  document.getElementById("matchResult").innerHTML = `
+    <div class="team-box">
+      <h3>Team 1 (Winners Stay)</h3>${currentTeam1.join(", ")}
+      <h3>Team 2</h3>${currentTeam2.join(", ")}
+      <br><br>
+      <h4>Standard Win (Win Value: ${getWinValue(currentTeam1)} / ${getWinValue(currentTeam2)})</h4>
+      <button onclick="team1StandardWin()">Team 1 Wins</button>
+      <button onclick="team2StandardWin()">Team 2 Wins</button>
+      <br><br>
+      <h4>Shutout Match</h4>
+      <button style="background: red;" onclick="handleShutoutLoss('Team 2')">Team 2 Shutout</button>
+      <button style="background: red;" onclick="handleShutoutLoss('Team 1')">Team 1 Shutout</button>
+    </div>`;
 }
 
-// Function to populate the dropdown menus
-function populateSelectors(previousSelection = null) {
-    const weekSelector = document.getElementById('weekSelector');
-    weekSelector.innerHTML = '';
+function team1StandardWin(){ 
+    if (!isPlayTime()) { showToast("Recording wins is restricted to allowed hours.", true); return; }
+    addToHistory("Team 1"); 
+    currentTeam2=pickNewTeam(currentTeam1); 
+    displayMatch(); 
+}
+function team2StandardWin(){ 
+    if (!isPlayTime()) { showToast("Recording wins is restricted to allowed hours.", true); return; }
+    addToHistory("Team 2"); 
+    const newWinners=[...currentTeam2]; 
+    currentTeam2=pickNewTeam(currentTeam2); 
+    currentTeam1=newWinners; 
+    displayMatch(); 
+}
 
-    weeks.forEach(w => {
-        const option = document.createElement('option');
-        option.value = w.weekNumber;
-        option.textContent = `Week ${w.weekNumber}`;
-        weekSelector.appendChild(option);
-    });
+function handleShutoutLoss(losingTeam){
+    if (!isPlayTime()) { showToast("Recording shutout loss is restricted to allowed hours.", true); return; }
     
-    const defaultSelection = previousSelection || weeks[weeks.length - 1].weekNumber;
-    if (defaultSelection) {
-        weekSelector.value = defaultSelection;
+    const playersToPenalize = (losingTeam === 'Team 1') ? currentTeam1 : currentTeam2;
+    const winningTeam = (losingTeam === 'Team 1') ? 'Team 2' : 'Team 1';
+    const winningTeamPlayers = (winningTeam === 'Team 1') ? currentTeam1 : currentTeam2;
+    const winValue = getWinValue(winningTeamPlayers); 
+    
+    const match = {
+        team1:[...currentTeam1], 
+        team2:[...currentTeam2], 
+        winner: winningTeam, 
+        shutoutLoss: losingTeam, 
+        playersPenalized: playersToPenalize, 
+        winValue: winValue
+    };
+
+    const weekNum = weeks[currentWeekIndex].weekNumber;
+    db.ref(`weeks/week_${weekNum}/matches`).push(match);
+    weeks[currentWeekIndex].matchHistory.push(match);
+    
+    if (winningTeam === 'Team 1') {
+        currentTeam2 = pickNewTeam(currentTeam1);
+    } else { 
+        const newWinners=[...currentTeam2]; 
+        currentTeam2=pickNewTeam(currentTeam2); 
+        currentTeam1=newWinners; 
     }
 
-    const playerSelector = document.getElementById('playerSelector');
-    if (playerSelector.options.length === 0) {
-        allPlayers.forEach(p => {
-            const option = document.createElement('option');
-            option.value = p;
-            option.textContent = p;
-            playerSelector.appendChild(option);
-        });
+    renderPlayerStats();
+    displayTopPlayer();
+    displayMatch();
+    showToast(`SHUTOUT! ${losingTeam} loses 0:10. Wins reset for: ${playersToPenalize.join(", ")}`, true);
+}
+
+// ==== HISTORY & FIREBASE ====
+
+function getWinValue(winningTeam) {
+    const hasNewbie = winningTeam.some(p => NEWBIE_PLAYERS.includes(p));
+    return hasNewbie ? 1.0 : 0.5; 
+}
+
+function addToHistory(winner){
+  const winningTeam = (winner === "Team 1") ? currentTeam1 : currentTeam2;
+  const winValue = getWinValue(winningTeam);
+
+  const match = {
+      team1:[...currentTeam1], 
+      team2:[...currentTeam2], 
+      winner, 
+      winValue: winValue
+  };
+
+  const weekNum = weeks[currentWeekIndex].weekNumber;
+  db.ref(`weeks/week_${weekNum}/matches`).push(match);
+  weeks[currentWeekIndex].matchHistory.push(match);
+  renderPlayerStats();
+  displayTopPlayer(); 
+  showToast(`${winner} wins! Match value: ${winValue.toFixed(1)} point(s).`);
+}
+
+// ==== TOP PLAYER RANKING ====
+function displayTopPlayer() {
+    const topPlayerDiv = document.getElementById('topPlayerDisplay');
+    topPlayerDiv.textContent = "No scores recorded yet."; 
+
+    if (!weeks[currentWeekIndex]) {
+        return;
+    }
+
+    const statArray = calculatePlayerStats(); 
+    
+    if (statArray.length === 0 || statArray[0].wins === 0.0) {
+        return;
+    }
+
+    let outputHtml = '';
+    
+    const topPlayer = statArray[0];
+    const nextPlayer = statArray[1] || null;
+
+    let isStrictFirstPlace = false;
+    if (statArray.length > 0) {
+        if (statArray.length === 1) {
+            isStrictFirstPlace = true;
+        } else {
+            if (topPlayer.wins > nextPlayer.wins || 
+                (topPlayer.wins === nextPlayer.wins && topPlayer.losses < nextPlayer.losses) ||
+                (topPlayer.wins === nextPlayer.wins && topPlayer.losses === nextPlayer.losses && topPlayer.games > nextPlayer.games)) {
+                
+                isStrictFirstPlace = true;
+            }
+        }
+    }
+
+    if (isStrictFirstPlace) {
+        outputHtml += `<p>🥇 1st Place (${topPlayer.wins.toFixed(1)} wins): ${topPlayer.player}</p>`;
+        
+        if (statArray.length > 2) {
+            const player2 = statArray[1];
+            const player3 = statArray[2];
+
+            if (player2.wins > player3.wins || 
+                (player2.wins === player3.wins && player2.losses < player3.losses) ||
+                (player2.wins === player3.wins && player2.losses === player3.losses && player2.games > player3.games)) {
+                
+                outputHtml += `<p >🥈 2nd Place (${player2.wins.toFixed(1)} wins): ${player2.player}</p>`;
+            }
+        }
+    } 
+    
+    if (outputHtml !== '') {
+        topPlayerDiv.innerHTML = outputHtml;
     }
 }
 
-// ===========================================
-//             STATS AND UI DISPLAY
-// ===========================================
-
-function updatePlayerStatsDisplay() {
-    if (!currentSelectedWeek) return;
+// Centralized Stats Calculation 
+function calculatePlayerStats() {
+    if(!weeks[currentWeekIndex]) return [];
+    const matches = weeks[currentWeekIndex].matchHistory;
     
-    const matches = currentSelectedWeek.matchHistory;
-    
-    // --- Stats Calculation ---
     let stats = {};
-    allPlayers.forEach(p => stats[p] = { wins: 0.0, losses: 0, games: 0 });
+    allPlayers.forEach(p=>stats[p]={wins:0.0,losses:0,games:0, penalized: false});
+    
+    let penaltyTracker = {}; 
+    allPlayers.forEach(p => penaltyTracker[p] = { penalizedIndex: -1, redeemedIndex: -1 });
 
-    matches.forEach(m => {
-        const winValue = m.winValue !== undefined ? m.winValue : 1.0;
+    matches.forEach((m, index)=>{
+      const team1Players = m.team1;
+      const team2Players = m.team2;
+      const winValue = m.winValue !== undefined ? m.winValue : 1.0;
+      let winners = (m.winner === 'Team 1') ? team1Players : team2Players;
+
+      winners.forEach(p => {
+          if (penaltyTracker[p].penalizedIndex > penaltyTracker[p].redeemedIndex) {
+              penaltyTracker[p].redeemedIndex = index;
+          }
+      });
+
+      if (m.shutoutLoss) {
+          const penalizedInThisMatch = (m.shutoutLoss === 'Team 1') ? team1Players : team2Players;
+          penalizedInThisMatch.forEach(p => {
+              penaltyTracker[p].penalizedIndex = index;
+          });
+      }
+      
+      team1Players.forEach(p=>{ 
+          stats[p].games++; 
+          if(m.winner==="Team 1") stats[p].wins += winValue;
+          else stats[p].losses++; 
+      });
+      team2Players.forEach(p=>{ 
+          stats[p].games++; 
+          if(m.winner==="Team 2") stats[p].wins += winValue;
+          else stats[p].losses++; 
+      });
+    });
+
+    allPlayers.forEach(p => {
+        const pIndex = penaltyTracker[p].penalizedIndex;
+        const rIndex = penaltyTracker[p].redeemedIndex;
         
-        m.team1.forEach(p => { 
-            stats[p].games++;
-            if (m.winner === "Team 1") stats[p].wins += winValue;
-            else stats[p].losses++;
-        });
-        m.team2.forEach(p => { 
-            stats[p].games++;
-            if (m.winner === "Team 2") stats[p].wins += winValue;
-            else stats[p].losses++;
-        });
+        if (pIndex >= 0 && pIndex > rIndex) {
+            stats[p].wins = 0.0;
+            stats[p].penalized = true;
+
+        } else if (pIndex >= 0 && rIndex > pIndex) {
+            stats[p].penalized = false;
+            
+            stats[p].wins = 0.0; 
+            for (let i = rIndex; i < matches.length; i++) {
+                const m = matches[i];
+                const playerWasInTeam1 = m.team1.includes(p);
+                const playerWasInTeam2 = m.team2.includes(p);
+                const winValue = m.winValue !== undefined ? m.winValue : 1.0;
+
+                if ((playerWasInTeam1 && m.winner === 'Team 1') || (playerWasInTeam2 && m.winner === 'Team 2')) {
+                    stats[p].wins += winValue;
+                }
+            }
+        }
     });
 
     let statArray = Object.entries(stats).map(([player,rec])=>({player,...rec}));
     
     statArray.sort((a,b)=>{ 
-      if(b.wins!==a.wins) return b.wins - a.wins;      
-      if(a.losses!==b.losses) return a.losses-b.losses; 
-      return b.games-a.games;                           
+      if(b.wins!==a.wins) return b.wins - a.wins;        
+      if(a.losses!==b.losses) return a.losses-b.losses;  
+      return b.games-a.games;                            
     });
-
-    // --- Rendering UI ---
-    const listDiv = document.getElementById('playerStatsList');
-    listDiv.innerHTML = '';
-    document.getElementById('matchesCountDisplay').textContent = `${matches.length} matches this week`;
-
-    statArray.forEach((r, index) => {
-        const isTopPerformer = (index === 0 && r.wins > 0 && (statArray.length === 1 || r.wins > statArray[1].wins));
-
-        listDiv.innerHTML += `
-            <div class="player-stat-row">
-                <div class="player-initial">${r.player.charAt(0)}</div>
-                <div class="player-name-container">
-                    ${r.player}
-                    ${isTopPerformer ? '<span class="top-performer">Top Performer</span>' : ''}
-                </div>
-                <div style="text-align: center;">
-                    <span class="stat-value">${r.wins.toFixed(1)}</span>
-                    <div class="stat-label">Wins</div>
-                </div>
-                <div style="text-align: center;">
-                    <span class="stat-value">${r.losses}</span>
-                    <div class="stat-label">Losses</div>
-                </div>
-                <div style="text-align: center;">
-                    <span class="stat-value">${r.games}</span>
-                    <div class="stat-label">Games</div>
-                </div>
-            </div>`;
-    });
-}
-
-// ===========================================
-//             DATA ACTIONS
-// ===========================================
-
-// Manually update player win/loss counts
-function updatePlayerStats() {
-    const player = document.getElementById('playerSelector').value;
-    const newWinsInput = document.getElementById('newWins').value;
-    const newLossesInput = document.getElementById('newLosses').value;
-    const selectedWeekNum = currentSelectedWeek.weekNumber;
-
-    if (!player) { showToast("Select a player.", true); return; }
     
-    const newWins = parseFloat(newWinsInput);
-    const newLosses = parseInt(newLossesInput);
-
-    if (isNaN(newWins) || isNaN(newLosses) || newWins < 0 || newLosses < 0) {
-        showToast("Enter valid non-negative numbers for Wins and Losses.", true);
-        return;
-    }
-
-    const playerRef = db.ref(`weeks/week_${selectedWeekNum}/stats/${player}`);
-
-    playerRef.update({
-        wins: newWins,
-        losses: newLosses
-    }).then(() => {
-        showToast(`Manually updated ${player}'s stats in Week ${selectedWeekNum}. Wins: ${newWins.toFixed(1)}, Losses: ${newLosses}.`);
-    }).catch(error => {
-        console.error("Firebase update failed:", error);
-        showToast("Failed to update stats.", true);
-    });
+    return statArray;
 }
 
-// Confirm and delete the last match played in the current week
-function deleteLastMatchConfirmation() {
-    if (!currentSelectedWeek) return showToast("No week selected.", true);
-    if (confirm(`Are you sure you want to delete the MOST RECENT match from Week ${currentSelectedWeek.weekNumber}? This is irreversible.`)) {
-        deleteLastMatch();
-    }
+
+// ==== PLAYER STATS ====
+function renderPlayerStats(){
+  const statArray = calculatePlayerStats();
+  
+  const tbody = document.querySelector("#playerStatsTable tbody");
+  tbody.innerHTML="";
+  statArray.forEach(r=>{ 
+    let rowClass = r.penalized ? 'class="penalized-row"' : '';
+    tbody.innerHTML+=`<tr ${rowClass}><td>${r.player}</td><td>${r.wins.toFixed(1)}</td><td>${r.losses}</td><td>${r.games}</td></tr>`; 
+  });
 }
 
-function deleteLastMatch() {
-    const selectedWeekNum = currentSelectedWeek.weekNumber;
-    
-    if (currentSelectedWeek.matchHistory.length === 0) {
-        showToast("No matches to delete in this week.", true);
-        return;
-    }
+// ==== SESSION & MATCH RESET FUNCTIONS ====
 
-    const lastMatch = currentSelectedWeek.matchHistory[currentSelectedWeek.matchHistory.length - 1];
-    const lastMatchId = lastMatch.id;
-
-    const matchRef = db.ref(`weeks/week_${selectedWeekNum}/matches/${lastMatchId}`);
-    
-    matchRef.remove().then(() => {
-        showToast(`Match ID: ${lastMatchId} deleted from Week ${selectedWeekNum}. Stats will be recalculated.`);
-        loadWeeksFromFirebase(true); 
-    }).catch(error => {
-        console.error("Firebase deletion failed:", error);
-        showToast("Failed to delete last match.", true);
-    });
+function endTodaySession(){
+  if (!isPlayTime()) { showToast("Ending session is restricted to allowed hours.", true); return; }
+  currentTeam1=[]; 
+  currentTeam2=[]; 
+  availablePlayers=[]; 
+  basePlayers=[];
+  document.getElementById("matchResult").innerHTML="";
+  showToast("Today's session ended. All stats are saved for the current week.");
 }
 
-// Confirm and delete ALL history
+function resetCurrentMatch(){
+  if (!isPlayTime()) { showToast("Resetting match is restricted to allowed hours.", true); return; }
+  currentTeam1=[]; 
+  currentTeam2=[]; 
+  availablePlayers=[]; 
+  basePlayers=[];
+  document.getElementById("matchResult").innerHTML="";
+  showToast("Current match was reset. Generate a new match.");
+}
+
 function resetAllHistoryConfirmation() {
-    if (confirm("DANGER: This will delete the ENTIRE 'weeks' node from Firebase. Are you ABSOLUTELY SURE?")) {
-        db.ref('weeks').remove().then(() => {
-            showToast("ALL Foosball history has been PERMANENTLY DELETED.", true);
-            loadWeeksFromFirebase(true);
-        }).catch(error => {
-            console.error("Firebase reset failed:", error);
-            showToast("Failed to reset all history.", true);
-        });
+    if (confirm("WARNING: This will delete ALL match history from Firebase and local stats. Are you sure?")) {
+        resetAllHistory();
     }
 }
 
-// Init on load
-window.onload = () => {
-    // The panel waits for authentication, so no immediate action needed on load.
-};
+function resetAllHistory(){
+  currentTeam1=[]; 
+  currentTeam2=[]; 
+  availablePlayers=[]; 
+  basePlayers=[];
+  weeks.forEach(w=>{ db.ref(`weeks/week_${w.weekNumber}/matches`).remove(); w.matchHistory=[]; });
+  renderPlayerStats();
+  displayTopPlayer();
+  document.getElementById("matchResult").innerHTML="";
+  showToast("All data is permanently deleted.", true);
+}
+
+
+// ==== LOAD WEEKS FROM FIREBASE ====
+function loadWeeksFromFirebase(){
+  if (!db) {
+    console.error("Firebase Database is not initialized.");
+    if(weeks.length===0) weeks.push({weekNumber:1, matchHistory:[]});
+    currentWeekIndex = weeks.length-1;
+    updateWeekDisplay();
+    renderPlayerStats();
+    displayTopPlayer();
+    hidePreloader();
+    return;
+  }
+  
+  db.ref('weeks').once('value').then(snapshot=>{
+    const data = snapshot.val();
+    weeks=[];
+
+    for(let key in data){
+      if (key.startsWith('week_')) {
+        const weekNum = parseInt(key.replace('week_',''));
+        const weekMatches = data[key] && data[key].matches ? Object.values(data[key].matches) : [];
+        
+        weeks.push({weekNumber:weekNum, matchHistory:weekMatches});
+      }
+    }
+
+    weeks.sort((a, b) => a.weekNumber - b.weekNumber);
+
+    if(weeks.length===0) {
+      weeks.push({weekNumber:1, matchHistory:[]});
+      showToast("Initialized new Week 1.");
+    } else {
+        showToast("Game data loaded successfully.");
+    }
+    
+    currentWeekIndex = weeks.length-1;
+    renderDropdownOptions(); // Populate the dropdown options list
+    renderPlayerStats();
+    displayTopPlayer(); 
+    
+    hidePreloader();
+    
+  }).catch(error => {
+    console.error("Error loading data from Firebase. Check connection and security rules:", error);
+    
+    if(weeks.length===0) weeks.push({weekNumber:1, matchHistory:[]});
+    currentWeekIndex = weeks.length-1;
+    renderDropdownOptions();
+    renderPlayerStats();
+    displayTopPlayer();
+    showToast("Error loading data. Check security rules.", true);
+    
+    hidePreloader();
+  });
+}
+
+// ==== INIT ON LOAD ====
+function initApp() {
+    loadWeeksFromFirebase(); 
+    toggleButtons(); 
+}
+
+window.onload = initApp;
 </script>
 
 </body>
