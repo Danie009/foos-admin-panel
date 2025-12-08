@@ -36,7 +36,7 @@ th { background: #9a00ff; color: white; }
 /* === Top Player Display Style === */
 #topPlayerDisplay {
     color: #333;
-    margin-top: 10px; 
+    margin-top: 10px;    
     font-size: 1.1em;
     line-height: 15px;
 }
@@ -132,7 +132,7 @@ th { background: #9a00ff; color: white; }
 
 #dropdown-options {
     position: absolute;
-    top: 100%; 
+    top: 100%;    
     left: 0;
     z-index: 10;
     width: 100%;
@@ -235,8 +235,8 @@ th { background: #9a00ff; color: white; }
 </div>
 <button onclick="addNewWeek()" id="addNewWeekBtn">Add New Week</button>
 <h3>
-  Select Present Players
-  <button class="collapsible-btn" onclick="togglePlayers()">Show / Hide Players</button>
+    Select Present Players
+    <button class="collapsible-btn" onclick="togglePlayers()">Show / Hide Players</button>
 </h3>
 <div class="player-list" id="playerList"></div>
 
@@ -262,8 +262,8 @@ th { background: #9a00ff; color: white; }
 <script>
 // ==== GLOBAL VARIABLES ====
 let allPlayers = [
-  "Joseph", "Timothy", "Isaac", "Allan", "Daniel",
-  "Ethan", "Mabonga", "IVAN", "Robert", "Shadrach", "Joel"
+    "Joseph", "Timothy", "Isaac", "Allan", "Daniel",
+    "Ethan", "Mabonga", "IVAN", "Robert", "Shadrach", "Joel"
 ];
 
 const PRO_PLAYERS = ["Joseph", "Allan", "Timothy", "Daniel", "Ethan", "Mabonga", "Robert"];
@@ -276,15 +276,26 @@ let weeks = [], currentWeekIndex = 0;
 // ==== UTILITIES ====
 function shuffle(arr){ return arr.sort(()=>Math.random()-0.5); }
 function togglePlayers(){
-  const list = document.querySelector('.player-list');
-  list.style.display = (list.style.display==='flex') ? 'none' : 'flex';
+    const list = document.querySelector('.player-list');
+    // The player list is initially 'display: flex' on large screens
+    // and 'display: none' on small screens (due to media queries).
+    // We check the computed style to correctly toggle it.
+    const computedDisplay = window.getComputedStyle(list).display;
+
+    if (computedDisplay === 'flex' || computedDisplay === 'block') {
+        list.style.display = 'none';
+    } else {
+        // On desktop, we want flex. On mobile, we want flex/block depending on the media query which is hard to replicate here, 
+        // so setting it back to 'flex' is generally the safest way for a standard layout.
+        list.style.display = 'flex';
+    }
 }
 function getSelectedPlayers(){
-  let selected = [];
-  allPlayers.forEach((name,i)=>{
-    if(document.getElementById("p"+i).checked) selected.push(name);
-  });
-  return selected;
+    let selected = [];
+    allPlayers.forEach((name,i)=>{
+        if(document.getElementById("p"+i).checked) selected.push(name);
+    });
+    return selected;
 }
 
 // ==== PRELOADER FUNCTION ====
@@ -294,7 +305,7 @@ function hidePreloader() {
         preloader.classList.add('hidden');
         setTimeout(() => {
             preloader.style.display = 'none';
-        }, 500); 
+        }, 500);    
     }
 }
 
@@ -313,7 +324,7 @@ function showToast(message, isError = false) {
     
     setTimeout(() => {
         toast.classList.add('show');
-    }, 10); 
+    }, 10);    
 
     setTimeout(() => {
         toast.classList.remove('show');
@@ -325,12 +336,12 @@ function showToast(message, isError = false) {
 // ==== INIT PLAYERS LIST ====
 const container = document.getElementById('playerList');
 allPlayers.forEach((name, i)=>{
-  const id = "p"+i;
-  container.innerHTML += `
-    <label>
-      <input type="checkbox" id="${id}" value="${name}" checked>
-      ${name}
-    </label>`;
+    const id = "p"+i;
+    container.innerHTML += `
+        <label>
+            <input type="checkbox" id="${id}" value="${name}" checked>
+            ${name}
+        </label>`;
 });
 
 // ==== FIREBASE INIT ====
@@ -341,7 +352,7 @@ const firebaseConfig = {
     projectId: "foosball-bae9c",
     storageBucket: "foosball-bae9c.appspot.com",
     messagingSenderId: "267658490202",
-    appId: "1:267658490202:web:0d6cb79bf1507d47090363",
+    appId: "1:267658490202:web:0d6cb779bf1507d47090363",
     measurementId: "G-73SVYKGB4Y"
 };
 const app = firebase.initializeApp(firebaseConfig);
@@ -358,11 +369,11 @@ function isPlayTime() {
     const currentTimeMinutes = hours * 60 + minutes;
 
     if (day >= 1 && day <= 5) {
-        const session1Start = 10 * 60; 
-        const session1End = 14 * 60 + 30; 
+        const session1Start = 13 * 60;    
+        const session1End = 14 * 60 + 30;    
 
-        const session2Start = 16 * 60 + 50; 
-        const session2End = 20 * 60; 
+        const session2Start = 16 * 60 + 50;    
+        const session2End = 20 * 60;    
 
         if (
             (currentTimeMinutes >= session1Start && currentTimeMinutes < session1End) ||
@@ -422,14 +433,14 @@ function toggleDropdown() {
 }
 
 function updateWeekDisplay() {
-  const currentWeekDisplay = document.getElementById("currentWeekDisplay");
-  if (weeks.length === 0) {
-      currentWeekDisplay.textContent = "No Weeks";
-      return;
-  }
-  
-  const currentWeekNumber = weeks[currentWeekIndex].weekNumber;
-  currentWeekDisplay.textContent = `Week ${currentWeekNumber}`;
+    const currentWeekDisplay = document.getElementById("currentWeekDisplay");
+    if (weeks.length === 0) {
+        currentWeekDisplay.textContent = "No Weeks";
+        return;
+    }
+    
+    const currentWeekNumber = weeks[currentWeekIndex].weekNumber;
+    currentWeekDisplay.textContent = `Week ${currentWeekNumber}`;
 }
 
 function selectWeek(weekIndex) {
@@ -469,19 +480,19 @@ function renderDropdownOptions() {
 
 
 function addNewWeek(){
-  if (!isPlayTime()) { showToast("Adding a new week is restricted to allowed hours.", true); return; }
-  const newWeek = {weekNumber: weeks.length+1, matchHistory:[]};
-  weeks.push(newWeek);
-  
-  db.ref(`weeks/week_${newWeek.weekNumber}/matches`).set(null); 
-  currentWeekIndex = weeks.length-1;
-  
-  // Update both the display and the options list
-  updateWeekDisplay(); 
-  renderDropdownOptions();
-  renderPlayerStats();
-  displayTopPlayer(); 
-  showToast(`New Week ${newWeek.weekNumber} created!`);
+    if (!isPlayTime()) { showToast("Adding a new week is restricted to allowed hours.", true); return; }
+    const newWeek = {weekNumber: weeks.length+1, matchHistory:[]};
+    weeks.push(newWeek);
+    
+    db.ref(`weeks/week_${newWeek.weekNumber}/matches`).set(null);    
+    currentWeekIndex = weeks.length-1;
+    
+    // Update both the display and the options list
+    updateWeekDisplay();    
+    renderDropdownOptions();
+    renderPlayerStats();
+    displayTopPlayer();    
+    showToast(`New Week ${newWeek.weekNumber} created!`);
 }
 
 
@@ -489,139 +500,216 @@ function addNewWeek(){
 
 function isTeamValid(team) {
     let newbieCount = team.filter(p => NEWBIE_PLAYERS.includes(p)).length;
-    return newbieCount < 2; 
+    return newbieCount < 2;    
 }
 
 function refillAvailablePlayers(){
-  availablePlayers = basePlayers.filter(p=>!currentTeam1.includes(p) && !currentTeam2.includes(p)); 
-  availablePlayers = shuffle(availablePlayers);
+    availablePlayers = basePlayers.filter(p=>!currentTeam1.includes(p) && !currentTeam2.includes(p));    
+    availablePlayers = shuffle(availablePlayers);
 }
 
 function pickNewTeam(opponentTeam = null){
-  if(availablePlayers.length<2) refillAvailablePlayers();
+    if(availablePlayers.length<2) refillAvailablePlayers();
 
-  let newTeam = [];
-  let players = [...availablePlayers];
-  
-  let validPairFound = false;
-  for (let i = 0; i < players.length; i++) {
-      for (let j = i + 1; j < players.length; j++) {
-          const p1 = players[i];
-          const p2 = players[j];
-          
-          if (isTeamValid([p1, p2])) {
-              newTeam = [p1, p2];
-              availablePlayers = availablePlayers.filter(p => p !== p1 && p !== p2);
-              validPairFound = true;
-              return newTeam;
-          }
-      }
-  }
+    let newTeam = [];
+    let players = [...availablePlayers];
+    
+    let validPairFound = false;
+    for (let i = 0; i < players.length; i++) {
+        for (let j = i + 1; j < players.length; j++) {
+            const p1 = players[i];
+            const p2 = players[j];
+            
+            if (isTeamValid([p1, p2])) {
+                newTeam = [p1, p2];
+                availablePlayers = availablePlayers.filter(p => p !== p1 && p !== p2);
+                validPairFound = true;
+                return newTeam;
+            }
+        }
+    }
 
-  if (!validPairFound && availablePlayers.length >= 2) {
-      newTeam = [availablePlayers[0], availablePlayers[1]];
-      availablePlayers.splice(0,2);
-      showToast("Warning: Forced team creation (two Newbies likely paired) due to player constraint. Check selection.", true);
-      return newTeam;
-  }
-  
-  if(availablePlayers.length === 1) {
-      showToast("Only one player available for a two-person team. Match generation failed.", true);
-  } else if (availablePlayers.length === 0) {
-      refillAvailablePlayers();
-      if (availablePlayers.length >= 2) return pickNewTeam(opponentTeam); 
-  }
-  
-  return [];
+    if (!validPairFound && availablePlayers.length >= 2) {
+        newTeam = [availablePlayers[0], availablePlayers[1]];
+        availablePlayers.splice(0,2);
+        showToast("Warning: Forced team creation (two Newbies likely paired) due to player constraint. Check selection.", true);
+        return newTeam;
+    }
+    
+    if(availablePlayers.length === 1) {
+        showToast("Only one player available for a two-person team. Match generation failed.", true);
+    } else if (availablePlayers.length === 0) {
+        refillAvailablePlayers();
+        if (availablePlayers.length >= 2) return pickNewTeam(opponentTeam);    
+    }
+    
+    return [];
 }
 
 
 function createInitialMatch(){
-  if (!isPlayTime()) { showToast("Match generation is restricted to allowed hours.", true); return; }
+    if (!isPlayTime()) { showToast("Match generation is restricted to allowed hours.", true); return; }
 
-  basePlayers = shuffle(getSelectedPlayers());
-  if(basePlayers.length<4){ 
-    showToast("Need at least 4 players selected to start a match.", true); 
-    return; 
-  }
+    basePlayers = shuffle(getSelectedPlayers());
+    if(basePlayers.length<4){    
+        showToast("Need at least 4 players selected to start a match.", true);    
+        return;    
+    }
 
-  let players = [...basePlayers];
-  currentTeam1 = [];
-  currentTeam2 = [];
+    let players = [...basePlayers];
+    currentTeam1 = [];
+    currentTeam2 = [];
 
-  let foundT1 = false;
-  for (let i = 0; i < players.length; i++) {
-      for (let j = i + 1; j < players.length; j++) {
-          const p1 = players[i];
-          const p2 = players[j];
-          if (isTeamValid([p1, p2])) {
-              currentTeam1 = [p1, p2];
-              players.splice(j, 1); 
-              players.splice(i, 1); 
-              foundT1 = true;
-              break;
-          }
-      }
-      if(foundT1) break;
-  }
-
-  let foundT2 = false;
-  if(players.length >= 2) {
+    let foundT1 = false;
     for (let i = 0; i < players.length; i++) {
         for (let j = i + 1; j < players.length; j++) {
-            const p3 = players[i];
-            const p4 = players[j];
-            if (isTeamValid([p3, p4])) {
-                currentTeam2 = [p3, p4];
-                players.splice(j, 1); 
-                players.splice(i, 1); 
-                foundT2 = true;
+            const p1 = players[i];
+            const p2 = players[j];
+            if (isTeamValid([p1, p2])) {
+                currentTeam1 = [p1, p2];
+                players.splice(j, 1);    
+                players.splice(i, 1);    
+                foundT1 = true;
                 break;
             }
         }
-        if(foundT2) break;
+        if(foundT1) break;
     }
-  }
-  
-  if(currentTeam1.length !== 2 || currentTeam2.length !== 2) {
-      showToast("Could not generate two valid teams (Newbie pairing constraint failed). Please select more diverse players.", true);
-      currentTeam1 = []; currentTeam2 = []; availablePlayers = []; basePlayers = [];
-      return;
-  }
 
-  availablePlayers = players; 
-  displayMatch();
-  showToast("First match generated. Let's play!");
+    let foundT2 = false;
+    if(players.length >= 2) {
+        for (let i = 0; i < players.length; i++) {
+            for (let j = i + 1; j < players.length; j++) {
+                const p3 = players[i];
+                const p4 = players[j];
+                if (isTeamValid([p3, p4])) {
+                    currentTeam2 = [p3, p4];
+                    players.splice(j, 1);    
+                    players.splice(i, 1);    
+                    foundT2 = true;
+                    break;
+                }
+            }
+            if(foundT2) break;
+        }
+    }
+    
+    if(currentTeam1.length !== 2 || currentTeam2.length !== 2) {
+        showToast("Could not generate two valid teams (Newbie pairing constraint failed). Please select more diverse players.", true);
+        currentTeam1 = []; currentTeam2 = []; availablePlayers = []; basePlayers = [];
+        return;
+    }
+
+    availablePlayers = players;    
+    displayMatch();
+    showToast("First match generated. Let's play!");
 }
 function displayMatch(){
-  document.getElementById("matchResult").innerHTML = `
-    <div class="team-box">
-      <h3>Team 1 (Winners Stay)</h3>${currentTeam1.join(", ")}
-      <h3>Team 2</h3>${currentTeam2.join(", ")}
-      <br><br>
-      <h4>Standard Win (Win Value: ${getWinValue(currentTeam1)} / ${getWinValue(currentTeam2)})</h4>
-      <button onclick="team1StandardWin()">Team 1 Wins</button>
-      <button onclick="team2StandardWin()">Team 2 Wins</button>
-      <br><br>
-      <h4>Shutout Match</h4>
-      <button style="background: red;" onclick="handleShutoutLoss('Team 2')">Team 2 Shutout</button>
-      <button style="background: red;" onclick="handleShutoutLoss('Team 1')">Team 1 Shutout</button>
-    </div>`;
+    // Use dummy values here, actual values calculated on win
+    const defaultWinValue = 1.0; 
+    const defaultLossValue = 1.0;
+
+    document.getElementById("matchResult").innerHTML = `
+        <div class="team-box">
+            <h3>Team 1 (Winners Stay)</h3>${currentTeam1.join(", ")}
+            <h3>Team 2</h3>${currentTeam2.join(", ")}
+            <br><br>
+            <h4>Standard Win (Base Win Value: ${defaultWinValue.toFixed(1)} / Base Loss Value: ${defaultLossValue.toFixed(1)})</h4>
+            <button onclick="team1StandardWin()">Team 1 Wins</button>
+            <button onclick="team2StandardWin()">Team 2 Wins</button>
+            <br><br>
+            <h4>Shutout Match</h4>
+            <button style="background: red;" onclick="handleShutoutLoss('Team 2')">Team 2 Shutout</button>
+            <button style="background: red;" onclick="handleShutoutLoss('Team 1')">Team 1 Shutout</button>
+        </div>`;
 }
 
-function team1StandardWin(){ 
+function team1StandardWin(){    
     if (!isPlayTime()) { showToast("Recording wins is restricted to allowed hours.", true); return; }
-    addToHistory("Team 1"); 
-    currentTeam2=pickNewTeam(currentTeam1); 
-    displayMatch(); 
+    addToHistory("Team 1");    
+    currentTeam2=pickNewTeam(currentTeam1);    
+    displayMatch();    
 }
-function team2StandardWin(){ 
+function team2StandardWin(){    
     if (!isPlayTime()) { showToast("Recording wins is restricted to allowed hours.", true); return; }
-    addToHistory("Team 2"); 
-    const newWinners=[...currentTeam2]; 
-    currentTeam2=pickNewTeam(currentTeam2); 
-    currentTeam1=newWinners; 
-    displayMatch(); 
+    addToHistory("Team 2");    
+    const newWinners=[...currentTeam2];    
+    currentTeam2=pickNewTeam(currentTeam2);    
+    currentTeam1=newWinners;    
+    displayMatch();    
+}
+
+
+// ==== HISTORY & FIREBASE (REVISED LOGIC) ====
+
+function hasNewbie(team) {
+    return team.some(p => NEWBIE_PLAYERS.includes(p));
+}
+
+/**
+ * Calculates the score changes for the winner and loser based on team composition.
+ * Returns {winValue, lossValue}
+ */
+function getScoreValues(teamA, teamB, winnerTeam) {
+    const winner = teamA === winnerTeam ? teamA : teamB;
+    const loser = teamA === winnerTeam ? teamB : teamA;
+    
+    const isWinnerAllPro = !hasNewbie(winner);
+    const isLoserAllPro = !hasNewbie(loser);
+    
+    // Case 1: All-Pro vs All-Pro
+    if (isWinnerAllPro && isLoserAllPro) {
+        // Winner → +1.0, Loser → +1.0
+        return { winValue: 1.0, lossValue: 1.0 };
+    }
+    
+    // Case 2: Mixed vs Mixed (or Pro/Newbie vs Pro/Newbie)
+    if (!isWinnerAllPro && !isLoserAllPro) {
+        // Winner → +1.0, Loser → +1.0
+        return { winValue: 1.0, lossValue: 1.0 };
+    }
+    
+    // Case 3: Pro-only vs Mixed (The "Punishment" Rule)
+    if (isWinnerAllPro !== isLoserAllPro) {
+        // We know one team is All-Pro (strong) and the other is Mixed (weak).
+        
+        // If the strong team (All-Pro) won
+        if (isWinnerAllPro) {
+            // If the PRO team wins over the MIXED team (e.g., Daniel, Timothy win Joseph, Isaac)
+            // strong gets 0.5, weak loses 0.5
+            return { winValue: 0.5, lossValue: 0.5 };
+        } else {
+            // If the weak team (Mixed) won (Upset/PUNISHMENT)
+            // weak gets 1.0, strong loses 1.0
+            return { winValue: 1.0, lossValue: 1.0 };
+        }
+    }
+    
+    // Fallback
+    return { winValue: 1.0, lossValue: 1.0 };
+}
+
+function addToHistory(winner){
+    const winningTeam = (winner === "Team 1") ? currentTeam1 : currentTeam2;
+    const losingTeam = (winner === "Team 1") ? currentTeam2 : currentTeam1;
+    
+    // Calculate scores based on all rules
+    const scores = getScoreValues(currentTeam1, currentTeam2, winningTeam);
+
+    const match = {
+        team1:[...currentTeam1], 
+        team2:[...currentTeam2], 
+        winner, 
+        winValue: scores.winValue, 
+        lossValue: scores.lossValue, 
+    };
+
+    const weekNum = weeks[currentWeekIndex].weekNumber;
+    db.ref(`weeks/week_${weekNum}/matches`).push(match);
+    weeks[currentWeekIndex].matchHistory.push(match);
+    renderPlayerStats();
+    displayTopPlayer(); 
+    showToast(`${winner} wins! Match value: +${scores.winValue.toFixed(1)} / Loss value: -${scores.lossValue.toFixed(1)}.`);
 }
 
 function handleShutoutLoss(losingTeam){
@@ -630,7 +718,10 @@ function handleShutoutLoss(losingTeam){
     const playersToPenalize = (losingTeam === 'Team 1') ? currentTeam1 : currentTeam2;
     const winningTeam = (losingTeam === 'Team 1') ? 'Team 2' : 'Team 1';
     const winningTeamPlayers = (winningTeam === 'Team 1') ? currentTeam1 : currentTeam2;
-    const winValue = getWinValue(winningTeamPlayers); 
+    const losingTeamPlayers = (losingTeam === 'Team 1') ? currentTeam2 : currentTeam1;
+    
+    // Calculate standard score values to get the winner's win value
+    const scores = getScoreValues(currentTeam1, currentTeam2, winningTeamPlayers);
     
     const match = {
         team1:[...currentTeam1], 
@@ -638,7 +729,8 @@ function handleShutoutLoss(losingTeam){
         winner: winningTeam, 
         shutoutLoss: losingTeam, 
         playersPenalized: playersToPenalize, 
-        winValue: winValue
+        winValue: scores.winValue, 
+        lossValue: 1.0, // Shutout always results in max 1.0 loss point for the loser
     };
 
     const weekNum = weeks[currentWeekIndex].weekNumber;
@@ -659,42 +751,17 @@ function handleShutoutLoss(losingTeam){
     showToast(`SHUTOUT! ${losingTeam} loses 0:10. Wins reset for: ${playersToPenalize.join(", ")}`, true);
 }
 
-// ==== HISTORY & FIREBASE ====
-
-function getWinValue(winningTeam) {
-    const hasNewbie = winningTeam.some(p => NEWBIE_PLAYERS.includes(p));
-    return hasNewbie ? 1.0 : 0.5; 
-}
-
-function addToHistory(winner){
-  const winningTeam = (winner === "Team 1") ? currentTeam1 : currentTeam2;
-  const winValue = getWinValue(winningTeam);
-
-  const match = {
-      team1:[...currentTeam1], 
-      team2:[...currentTeam2], 
-      winner, 
-      winValue: winValue
-  };
-
-  const weekNum = weeks[currentWeekIndex].weekNumber;
-  db.ref(`weeks/week_${weekNum}/matches`).push(match);
-  weeks[currentWeekIndex].matchHistory.push(match);
-  renderPlayerStats();
-  displayTopPlayer(); 
-  showToast(`${winner} wins! Match value: ${winValue.toFixed(1)} point(s).`);
-}
 
 // ==== TOP PLAYER RANKING ====
 function displayTopPlayer() {
     const topPlayerDiv = document.getElementById('topPlayerDisplay');
-    topPlayerDiv.textContent = "No scores recorded yet."; 
+    topPlayerDiv.textContent = "No scores recorded yet.";    
 
     if (!weeks[currentWeekIndex]) {
         return;
     }
 
-    const statArray = calculatePlayerStats(); 
+    const statArray = calculatePlayerStats();    
     
     if (statArray.length === 0 || statArray[0].wins === 0.0) {
         return;
@@ -707,10 +774,11 @@ function displayTopPlayer() {
 
     let isStrictFirstPlace = false;
     if (statArray.length > 0) {
+        // Determine strict first place based on Wins > Losses > Games
         if (statArray.length === 1) {
             isStrictFirstPlace = true;
         } else {
-            if (topPlayer.wins > nextPlayer.wins || 
+            if (topPlayer.wins > nextPlayer.wins ||    
                 (topPlayer.wins === nextPlayer.wins && topPlayer.losses < nextPlayer.losses) ||
                 (topPlayer.wins === nextPlayer.wins && topPlayer.losses === nextPlayer.losses && topPlayer.games > nextPlayer.games)) {
                 
@@ -726,14 +794,14 @@ function displayTopPlayer() {
             const player2 = statArray[1];
             const player3 = statArray[2];
 
-            if (player2.wins > player3.wins || 
+            if (player2.wins > player3.wins ||    
                 (player2.wins === player3.wins && player2.losses < player3.losses) ||
                 (player2.wins === player3.wins && player2.losses === player3.losses && player2.games > player3.games)) {
                 
                 outputHtml += `<p >🥈 2nd Place (${player2.wins.toFixed(1)} wins): ${player2.player}</p>`;
             }
         }
-    } 
+    }    
     
     if (outputHtml !== '') {
         topPlayerDiv.innerHTML = outputHtml;
@@ -752,45 +820,51 @@ function calculatePlayerStats() {
     allPlayers.forEach(p => penaltyTracker[p] = { penalizedIndex: -1, redeemedIndex: -1 });
 
     matches.forEach((m, index)=>{
-      const team1Players = m.team1;
-      const team2Players = m.team2;
-      const winValue = m.winValue !== undefined ? m.winValue : 1.0;
-      let winners = (m.winner === 'Team 1') ? team1Players : team2Players;
+        const team1Players = m.team1;
+        const team2Players = m.team2;
+        // CORRECT: Reads saved lossValue (which can be 0.5 or 1.0)
+        const winValue = m.winValue !== undefined ? m.winValue : 1.0; 
+        const lossValue = m.lossValue !== undefined ? m.lossValue : 1.0;
+        let winners = (m.winner === 'Team 1') ? team1Players : team2Players;
 
-      winners.forEach(p => {
-          if (penaltyTracker[p].penalizedIndex > penaltyTracker[p].redeemedIndex) {
-              penaltyTracker[p].redeemedIndex = index;
-          }
-      });
+        winners.forEach(p => {
+            if (penaltyTracker[p].penalizedIndex > penaltyTracker[p].redeemedIndex) {
+                penaltyTracker[p].redeemedIndex = index;
+            }
+        });
 
-      if (m.shutoutLoss) {
-          const penalizedInThisMatch = (m.shutoutLoss === 'Team 1') ? team1Players : team2Players;
-          penalizedInThisMatch.forEach(p => {
-              penaltyTracker[p].penalizedIndex = index;
-          });
-      }
-      
-      team1Players.forEach(p=>{ 
-          stats[p].games++; 
-          if(m.winner==="Team 1") stats[p].wins += winValue;
-          else stats[p].losses++; 
-      });
-      team2Players.forEach(p=>{ 
-          stats[p].games++; 
-          if(m.winner==="Team 2") stats[p].wins += winValue;
-          else stats[p].losses++; 
-      });
+        if (m.shutoutLoss) {
+            const penalizedInThisMatch = (m.shutoutLoss === 'Team 1') ? team1Players : team2Players;
+            penalizedInThisMatch.forEach(p => {
+                penaltyTracker[p].penalizedIndex = index;
+            });
+        }
+        
+        // Accumulate stats using the match-specific values
+        team1Players.forEach(p=>{ 
+            stats[p].games++; 
+            if(m.winner==="Team 1") stats[p].wins += winValue;
+            else stats[p].losses += lossValue; 
+        });
+        team2Players.forEach(p=>{ 
+            stats[p].games++; 
+            if(m.winner==="Team 2") stats[p].wins += winValue;
+            else stats[p].losses += lossValue; 
+        });
     });
 
     allPlayers.forEach(p => {
         const pIndex = penaltyTracker[p].penalizedIndex;
         const rIndex = penaltyTracker[p].redeemedIndex;
         
+        // --- Penalty/Redemption Logic ---
         if (pIndex >= 0 && pIndex > rIndex) {
+            // Player is penalized: wins reset to 0.0
             stats[p].wins = 0.0;
             stats[p].penalized = true;
 
         } else if (pIndex >= 0 && rIndex > pIndex) {
+            // Player is redeemed: recalculate wins from redemption point
             stats[p].penalized = false;
             
             stats[p].wins = 0.0; 
@@ -809,10 +883,10 @@ function calculatePlayerStats() {
 
     let statArray = Object.entries(stats).map(([player,rec])=>({player,...rec}));
     
-    statArray.sort((a,b)=>{ 
-      if(b.wins!==a.wins) return b.wins - a.wins;        
-      if(a.losses!==b.losses) return a.losses-b.losses;  
-      return b.games-a.games;                            
+    statArray.sort((a,b)=>{    
+        if(b.wins!==a.wins) return b.wins - a.wins;                
+        if(a.losses!==b.losses) return a.losses-b.losses;      
+        return b.games-a.games;                                
     });
     
     return statArray;
@@ -821,36 +895,37 @@ function calculatePlayerStats() {
 
 // ==== PLAYER STATS ====
 function renderPlayerStats(){
-  const statArray = calculatePlayerStats();
-  
-  const tbody = document.querySelector("#playerStatsTable tbody");
-  tbody.innerHTML="";
-  statArray.forEach(r=>{ 
-    let rowClass = r.penalized ? 'class="penalized-row"' : '';
-    tbody.innerHTML+=`<tr ${rowClass}><td>${r.player}</td><td>${r.wins.toFixed(1)}</td><td>${r.losses}</td><td>${r.games}</td></tr>`; 
-  });
+    const statArray = calculatePlayerStats();
+    
+    const tbody = document.querySelector("#playerStatsTable tbody");
+    tbody.innerHTML="";
+    statArray.forEach(r=>{    
+        let rowClass = r.penalized ? 'class="penalized-row"' : '';
+        // Note: Wins and Losses are displayed using toFixed(1)
+        tbody.innerHTML+=`<tr ${rowClass}><td>${r.player}</td><td>${r.wins.toFixed(1)}</td><td>${r.losses.toFixed(1)}</td><td>${r.games}</td></tr>`;    
+    });
 }
 
 // ==== SESSION & MATCH RESET FUNCTIONS ====
 
 function endTodaySession(){
-  if (!isPlayTime()) { showToast("Ending session is restricted to allowed hours.", true); return; }
-  currentTeam1=[]; 
-  currentTeam2=[]; 
-  availablePlayers=[]; 
-  basePlayers=[];
-  document.getElementById("matchResult").innerHTML="";
-  showToast("Today's session ended. All stats are saved for the current week.");
+    if (!isPlayTime()) { showToast("Ending session is restricted to allowed hours.", true); return; }
+    currentTeam1=[];    
+    currentTeam2=[];    
+    availablePlayers=[];    
+    basePlayers=[];
+    document.getElementById("matchResult").innerHTML="";
+    showToast("Today's session ended. All stats are saved for the current week.");
 }
 
 function resetCurrentMatch(){
-  if (!isPlayTime()) { showToast("Resetting match is restricted to allowed hours.", true); return; }
-  currentTeam1=[]; 
-  currentTeam2=[]; 
-  availablePlayers=[]; 
-  basePlayers=[];
-  document.getElementById("matchResult").innerHTML="";
-  showToast("Current match was reset. Generate a new match.");
+    if (!isPlayTime()) { showToast("Resetting match is restricted to allowed hours.", true); return; }
+    currentTeam1=[];    
+    currentTeam2=[];    
+    availablePlayers=[];    
+    basePlayers=[];
+    document.getElementById("matchResult").innerHTML="";
+    showToast("Current match was reset. Generate a new match.");
 }
 
 function resetAllHistoryConfirmation() {
@@ -860,78 +935,78 @@ function resetAllHistoryConfirmation() {
 }
 
 function resetAllHistory(){
-  currentTeam1=[]; 
-  currentTeam2=[]; 
-  availablePlayers=[]; 
-  basePlayers=[];
-  weeks.forEach(w=>{ db.ref(`weeks/week_${w.weekNumber}/matches`).remove(); w.matchHistory=[]; });
-  renderPlayerStats();
-  displayTopPlayer();
-  document.getElementById("matchResult").innerHTML="";
-  showToast("All data is permanently deleted.", true);
+    currentTeam1=[];    
+    currentTeam2=[];    
+    availablePlayers=[];    
+    basePlayers=[];
+    weeks.forEach(w=>{ db.ref(`weeks/week_${w.weekNumber}/matches`).remove(); w.matchHistory=[]; });
+    renderPlayerStats();
+    displayTopPlayer();
+    document.getElementById("matchResult").innerHTML="";
+    showToast("All data is permanently deleted.", true);
 }
 
 
 // ==== LOAD WEEKS FROM FIREBASE ====
 function loadWeeksFromFirebase(){
-  if (!db) {
-    console.error("Firebase Database is not initialized.");
-    if(weeks.length===0) weeks.push({weekNumber:1, matchHistory:[]});
-    currentWeekIndex = weeks.length-1;
-    updateWeekDisplay();
-    renderPlayerStats();
-    displayTopPlayer();
-    hidePreloader();
-    return;
-  }
-  
-  db.ref('weeks').once('value').then(snapshot=>{
-    const data = snapshot.val();
-    weeks=[];
+    if (!db) {
+        console.error("Firebase Database is not initialized.");
+        if(weeks.length===0) weeks.push({weekNumber:1, matchHistory:[]});
+        currentWeekIndex = weeks.length-1;
+        updateWeekDisplay();
+        renderPlayerStats();
+        displayTopPlayer();
+        hidePreloader();
+        return;
+    }
+    
+    db.ref('weeks').once('value').then(snapshot=>{
+        const data = snapshot.val();
+        weeks=[];
 
-    for(let key in data){
-      if (key.startsWith('week_')) {
-        const weekNum = parseInt(key.replace('week_',''));
-        const weekMatches = data[key] && data[key].matches ? Object.values(data[key].matches) : [];
+        for(let key in data){
+            if (key.startsWith('week_')) {
+                const weekNum = parseInt(key.replace('week_',''));
+                const weekMatches = data[key] && data[key].matches ? Object.values(data[key].matches) : [];
+                
+                weeks.push({weekNumber:weekNum, matchHistory:weekMatches});
+            }
+        }
+
+        weeks.sort((a, b) => a.weekNumber - b.weekNumber);
+
+        if(weeks.length===0) {
+            weeks.push({weekNumber:1, matchHistory:[]});
+            showToast("Initialized new Week 1.");
+        } else {
+            showToast("Game data loaded successfully.");
+        }
         
-        weeks.push({weekNumber:weekNum, matchHistory:weekMatches});
-      }
-    }
-
-    weeks.sort((a, b) => a.weekNumber - b.weekNumber);
-
-    if(weeks.length===0) {
-      weeks.push({weekNumber:1, matchHistory:[]});
-      showToast("Initialized new Week 1.");
-    } else {
-        showToast("Game data loaded successfully.");
-    }
-    
-    currentWeekIndex = weeks.length-1;
-    renderDropdownOptions(); // Populate the dropdown options list
-    renderPlayerStats();
-    displayTopPlayer(); 
-    
-    hidePreloader();
-    
-  }).catch(error => {
-    console.error("Error loading data from Firebase. Check connection and security rules:", error);
-    
-    if(weeks.length===0) weeks.push({weekNumber:1, matchHistory:[]});
-    currentWeekIndex = weeks.length-1;
-    renderDropdownOptions();
-    renderPlayerStats();
-    displayTopPlayer();
-    showToast("Error loading data. Check security rules.", true);
-    
-    hidePreloader();
-  });
+        currentWeekIndex = weeks.length-1;
+        renderDropdownOptions(); // Populate the dropdown options list
+        renderPlayerStats();
+        displayTopPlayer();    
+        
+        hidePreloader();
+        
+    }).catch(error => {
+        console.error("Error loading data from Firebase. Check connection and security rules:", error);
+        
+        if(weeks.length===0) weeks.push({weekNumber:1, matchHistory:[]});
+        currentWeekIndex = weeks.length-1;
+        renderDropdownOptions();
+        renderPlayerStats();
+        displayTopPlayer();
+        showToast("Error loading data. Check security rules.", true);
+        
+        hidePreloader();
+    });
 }
 
 // ==== INIT ON LOAD ====
 function initApp() {
-    loadWeeksFromFirebase(); 
-    toggleButtons(); 
+    loadWeeksFromFirebase();    
+    toggleButtons();    
 }
 
 window.onload = initApp;
